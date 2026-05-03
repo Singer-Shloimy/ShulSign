@@ -1,0 +1,13 @@
+{
+  "name": "shul-display-board",
+  "version": "1.0.0",
+  "description": "Shul Display Board",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "settings": {
+    "shul_name": "בית הכנסת",
+    "city_label": "New York",
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "timezone": "America/New_York",
+    "ticker": "",
+    "simchas_title": "שמחות",
+    "simchas_json": [],
+    "announcements_title": "הודעות",
+    "announcements_json": [],
+    "contact_json": []
+  },
+  "docs": [
+    {
+      "id": 1,
+      "title": "flyer3_shabbos_shiur.pdf",
+      "file_path": "/pdfs/1777821940086-tagydxj9cc.pdf",
+      "display_order": 1,
+      "duration_seconds": 20,
+      "is_active": true,
+      "uploaded_at": "2026-05-03T15:25:40.089Z"
+    }
+  ],
+  "nextId": 2
+}

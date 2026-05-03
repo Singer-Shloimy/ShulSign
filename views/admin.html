@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Shul Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e18;--surface:#0d1320;--surface2:#1a2235;--surface3:#1f2d45;
+  --gold:#c9960c;--gold-lt:#f5d87a;--pb:rgba(201,150,12,.22);
+  --text:#e8eaf0;--muted:#7a90b5;--border:rgba(255,255,255,.08);
+  --green:#13623a;--red:#7a1c1c;--blue:#1a3a80;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);
+  font-family:'Heebo',Arial,sans-serif;font-size:14px}
+
+/* ── SHELL ── */
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  background:var(--surface);border-right:1px solid var(--border);
+  padding:20px 14px;display:flex;flex-direction:column;gap:4px;
+  position:sticky;top:0;height:100vh;overflow:auto;
+}
+.sidebar-logo{
+  font-size:20px;font-weight:900;color:var(--gold-lt);
+  padding:8px 10px 18px;border-bottom:1px solid var(--pb);
+  margin-bottom:12px;display:flex;align-items:center;gap:8px;
+}
+.nav-link{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 12px;border-radius:10px;color:var(--text);
+  text-decoration:none;font-weight:700;font-size:14px;
+  transition:background .15s;
+}
+.nav-link:hover{background:var(--surface2)}
+.nav-link.active{background:rgba(201,150,12,.15);color:var(--gold-lt)}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.sidebar-divider{height:1px;background:var(--border);margin:10px 0}
+.nav-ext{
+  display:block;padding:10px 12px;border-radius:10px;
+  background:rgba(201,150,12,.12);border:1px solid var(--pb);
+  color:var(--gold-lt);text-decoration:none;font-weight:700;font-size:13px;
+  text-align:center;margin-top:auto;transition:background .15s;
+}
+.nav-ext:hover{background:rgba(201,150,12,.22)}
+
+/* ── MAIN ── */
+.main{padding:24px 28px;max-width:960px}
+.page-title{font-size:26px;font-weight:900;color:var(--gold-lt);margin-bottom:20px}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;margin-bottom:22px;
+  border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{
+  padding:9px 18px;border-radius:10px 10px 0 0;cursor:pointer;
+  font-weight:700;font-size:14px;color:var(--muted);
+  border:1px solid transparent;border-bottom:none;
+  background:transparent;transition:all .15s;
+}
+.tab:hover{color:var(--text);background:var(--surface2)}
+.tab.active{color:var(--gold-lt);background:var(--surface2);
+  border-color:var(--border);border-bottom-color:var(--surface2)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── CARDS / FORM ── */
+.card{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;margin-bottom:16px;
+}
+.card-title{font-size:16px;font-weight:900;margin-bottom:14px;
+  color:var(--gold-lt);padding-bottom:10px;border-bottom:1px solid var(--border)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.field input,.field textarea,.field select{
+  background:var(--surface3);color:var(--text);
+  border:1px solid var(--border);border-radius:8px;
+  padding:9px 11px;font-size:14px;font-family:inherit;
+  transition:border-color .15s;width:100%;
+}
+.field input:focus,.field textarea:focus,.field select:focus{
+  outline:none;border-color:rgba(201,150,12,.5);
+}
+.field textarea{resize:vertical;min-height:100px}
+.hint{font-size:11px;color:var(--muted);margin-top:3px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{
+  padding:9px 18px;border-radius:9px;font-weight:700;font-size:14px;
+  cursor:pointer;border:none;font-family:inherit;transition:opacity .15s;
+}
+.btn:hover{opacity:.85}
+.btn-primary{background:var(--gold);color:#1a0f00}
+.btn-danger{background:var(--red);color:#fff}
+.btn-ghost{background:var(--surface3);color:var(--text);border:1px solid var(--border)}
+
+/* ── STATUS ── */
+.badge{
+  display:inline-flex;align-items:center;padding:5px 11px;border-radius:20px;
+  font-size:12px;font-weight:700;gap:5px;
+}
+.badge-ok{background:rgba(19,98,58,.5);color:#6effa6;border:1px solid rgba(19,98,58,.7)}
+.badge-err{background:rgba(122,28,28,.5);color:#ffaaaa;border:1px solid rgba(122,28,28,.7)}
+
+/* ── PDF TABLE ── */
+.pdf-table{width:100%;border-collapse:collapse}
+.pdf-table th{
+  text-align:left;font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.05em;
+  padding:8px 10px;border-bottom:1px solid var(--border);
+}
+.pdf-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.pdf-table tr:last-child td{border-bottom:none}
+.pdf-table tr:hover td{background:rgba(255,255,255,.02)}
+.pdf-table input[type=number]{
+  width:70px;background:var(--surface3);color:var(--text);
+  border:1px solid var(--border);border-radius:7px;padding:5px 7px;
+  font-size:13px;font-family:inherit;
+}
+.toggle{position:relative;display:inline-block;width:38px;height:22px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{
+  position:absolute;inset:0;background:#333;border-radius:22px;cursor:pointer;
+  transition:background .2s;
+}
+.slider::before{
+  content:'';position:absolute;height:16px;width:16px;
+  left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;
+}
+.toggle input:checked+.slider{background:var(--gold)}
+.toggle input:checked+.slider::before{transform:translateX(16px)}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{
+  border:2px dashed var(--pb);border-radius:12px;padding:28px;
+  text-align:center;cursor:pointer;transition:background .2s;
+  background:rgba(201,150,12,.04);
+}
+.upload-zone:hover{background:rgba(201,150,12,.09)}
+.upload-zone.drag{background:rgba(201,150,12,.15);border-color:var(--gold)}
+.uz-icon{font-size:36px;color:var(--gold);margin-bottom:8px}
+.uz-title{font-weight:700;font-size:15px;margin-bottom:4px}
+.uz-sub{font-size:12px;color:var(--muted)}
+#file-input{display:none}
+
+/* ── PROGRESS ── */
+.progress-wrap{display:none;margin-top:12px}
+.progress-bar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);border-radius:3px;width:0%;transition:width .2s}
+
+/* ── DASHBOARD STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.stat-card{
+  background:var(--surface3);border:1px solid var(--border);border-radius:12px;
+  padding:16px 18px;
+}
+.stat-val{font-size:28px;font-weight:900;color:var(--gold-lt);line-height:1}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">✡ Shul Board</div>
+    <a class="nav-link" href="#" onclick="showTab('dashboard',this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-link" href="#" onclick="showTab('pdfs',this)">
+      <span class="nav-icon">📄</span> PDFs
+    </a>
+    <a class="nav-link" href="#" onclick="showTab('settings',this)">
+      <span class="nav-icon">⚙️</span> Settings
+    </a>
+    <div class="sidebar-divider"></div>
+    <a class="nav-ext" href="/display" target="_blank">🖥 Open Display ↗</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="page-title" id="page-title">Dashboard</div>
+
+    <!-- DASHBOARD -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-val" id="st-total">–</div><div class="stat-lbl">Total PDFs</div></div>
+        <div class="stat-card"><div class="stat-val" id="st-active">–</div><div class="stat-lbl">Active PDFs</div></div>
+        <div class="stat-card"><div class="stat-val" id="st-shul">–</div><div class="stat-lbl">Shul Name</div></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Quick Actions</div>
+        <div class="row">
+          <button class="btn btn-primary" onclick="showTab('pdfs')">Upload PDF</button>
+          <button class="btn btn-ghost" onclick="showTab('settings')">Edit Settings</button>
+          <a href="/display" target="_blank" class="btn btn-ghost" style="text-decoration:none">Open Display</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- PDFs -->
+    <div class="tab-panel" id="tab-pdfs">
+      <div class="card">
+        <div class="card-title">Upload PDF</div>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+          <div class="uz-icon">📤</div>
+          <div class="uz-title">Click to upload or drag & drop</div>
+          <div class="uz-sub">PDF only · Max 200 MB</div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf">
+        <div class="progress-wrap" id="progress-wrap">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:5px" id="progress-label">Uploading...</div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+        <div id="upload-status" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Manage PDFs</div>
+        <div id="docs-table-wrap"><p style="color:var(--muted)">Loading...</p></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab-panel" id="tab-settings">
+      <form id="settings-form" onsubmit="saveSettings(event)">
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Display Header</div>
+            <div class="field"><label>Shul Name</label><input name="shul_name" dir="rtl"></div>
+            <div class="field"><label>City Label</label><input name="city_label"></div>
+            <div class="field"><label>Bottom Ticker</label><textarea name="ticker" rows="3" dir="rtl"></textarea></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Location (Zmanim)</div>
+            <div class="field"><label>Latitude</label><input name="latitude" type="number" step="0.0001" placeholder="e.g. 40.7128"></div>
+            <div class="field"><label>Longitude</label><input name="longitude" type="number" step="0.0001" placeholder="e.g. -74.0060"></div>
+            <div class="field">
+              <label>Timezone</label>
+              <select name="timezone">
+                <option value="America/New_York">America/New_York</option>
+                <option value="America/Chicago">America/Chicago</option>
+                <option value="America/Denver">America/Denver</option>
+                <option value="America/Los_Angeles">America/Los_Angeles</option>
+                <option value="America/Toronto">America/Toronto</option>
+                <option value="Europe/London">Europe/London</option>
+                <option value="Europe/Paris">Europe/Paris</option>
+                <option value="Europe/Berlin">Europe/Berlin</option>
+                <option value="Asia/Jerusalem">Asia/Jerusalem</option>
+                <option value="Australia/Sydney">Australia/Sydney</option>
+              </select>
+            </div>
+            <div class="hint">Find coordinates at <a href="https://www.latlong.net" target="_blank" style="color:var(--gold-lt)">latlong.net</a></div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">🎊 Simchas — Mazel Tov Cards</div>
+            <div id="simchas-builder" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+            <button type="button" class="btn btn-ghost" onclick="addSimchaRow()">+ Add Simcha</button>
+            <input type="hidden" name="simchas_title" value="שמחות">
+            <input type="hidden" name="simchas_text" id="simchas_text_hidden">
+          </div>
+          <div class="card">
+            <div class="card-title">📢 Announcements</div>
+            <div id="ann-builder" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+            <button type="button" class="btn btn-ghost" onclick="addAnnRow()">+ Add Announcement</button>
+            <input type="hidden" name="announcements_title" value="הודעות">
+            <input type="hidden" name="announcements_text" id="ann_text_hidden">
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📞 Contact Info</div>
+          <div id="contact-builder" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+          <button type="button" class="btn btn-ghost" onclick="addContactRow()">+ Add Contact Line</button>
+          <input type="hidden" name="contact_text" id="contact_text_hidden">
+        </div>
+        <div class="row" style="margin-top:4px">
+          <button type="submit" class="btn btn-primary">💾 Save All Settings</button>
+          <div id="settings-status"></div>
+        </div>
+      </form>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Tab switching ──
+function showTab(id, linkEl) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  if (linkEl) linkEl.classList.add('active');
+  else {
+    document.querySelectorAll('.nav-link').forEach(l => {
+      if (l.getAttribute('onclick') && l.getAttribute('onclick').includes("'"+id+"'"))
+        l.classList.add('active');
+    });
+  }
+  const titles = {dashboard:'Dashboard', pdfs:'PDFs', settings:'Settings'};
+  document.getElementById('page-title').textContent = titles[id] || id;
+  if (id==='pdfs') loadDocs();
+  if (id==='settings') loadSettingsForm();
+  if (id==='dashboard') loadDashboard();
+}
+
+// Show dashboard by default
+document.querySelector('.nav-link').classList.add('active');
+
+// ── Dashboard ──
+async function loadDashboard() {
+  const docs = await apiFetch('/api/docs');
+  const settings = await apiFetch('/api/settings');
+  document.getElementById('st-total').textContent = docs.length;
+  document.getElementById('st-active').textContent = docs.filter(d=>d.is_active).length;
+  document.getElementById('st-shul').textContent = settings.shul_name || '—';
+}
+loadDashboard();
+
+// ── API helper ──
+async function apiFetch(url, opts) {
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+// ── Settings ──
+let settingsData = {};
+async function loadSettingsForm() {
+  const s = await apiFetch('/api/settings');
+  settingsData = s;
+  const f = document.getElementById('settings-form');
+  f.shul_name.value = s.shul_name||'';
+  f.city_label.value = s.city_label||'';
+  f.ticker.value = s.ticker||'';
+  f.latitude.value = s.latitude||'';
+  f.longitude.value = s.longitude||'';
+  f.timezone.value = s.timezone||'America/New_York';
+  // Build dynamic rows
+  buildSimchas(s.simchas_json||[]);
+  buildAnn(s.announcements_json||[]);
+  buildContact(s.contact_json||[]);
+}
+
+// ── SIMCHAS BUILDER ──
+const SIMCHA_TYPES = ['הולדת הבן','הולדת הבת','בר מצוה','בת מצוה','חתונה','אירוסין','שמחת בית השואבה','אחר'];
+
+function buildSimchas(items) {
+  const el = document.getElementById('simchas-builder');
+  el.innerHTML = '';
+  if (!items.length) { addSimchaRow(); return; }
+  items.forEach(i => addSimchaRow(i.label, i.value));
+}
+
+function addSimchaRow(name='', type='') {
+  const el = document.getElementById('simchas-builder');
+  const row = document.createElement('div');
+  row.className = 'builder-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;background:var(--surface3);padding:10px 12px;border-radius:10px;border:1px solid var(--border)';
+  row.innerHTML = `
+    <input type="text" placeholder="Name e.g. להרב דוד כהן שליט״א" dir="rtl"
+      value="${esc(name)}" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:14px;font-family:inherit;width:100%">
+    <select dir="rtl" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:14px;font-family:inherit;width:100%">
+      ${SIMCHA_TYPES.map(t=>`<option value="${t}" ${t===type?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <button type="button" onclick="this.closest('.builder-row').remove()" style="background:var(--red);color:#fff;border:none;border-radius:7px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700">✕</button>`;
+  el.appendChild(row);
+}
+
+function collectSimchas() {
+  const rows = document.querySelectorAll('#simchas-builder .builder-row');
+  return Array.from(rows).map(r => {
+    const inp = r.querySelector('input');
+    const sel = r.querySelector('select');
+    return inp.value.trim() ? `${inp.value.trim()}|${sel.value}` : null;
+  }).filter(Boolean).join('\n');
+}
+
+// ── ANNOUNCEMENTS BUILDER ──
+function buildAnn(items) {
+  const el = document.getElementById('ann-builder');
+  el.innerHTML = '';
+  items.forEach(i => addAnnRow(i.label, i.value));
+}
+
+function addAnnRow(label='', value='') {
+  const el = document.getElementById('ann-builder');
+  const row = document.createElement('div');
+  row.className = 'builder-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;background:var(--surface3);padding:10px 12px;border-radius:10px;border:1px solid var(--border)';
+  row.innerHTML = `
+    <input type="text" placeholder="Label (e.g. שיעור תורה)" dir="rtl" value="${esc(label)}"
+      style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:14px;font-family:inherit;width:100%">
+    <input type="text" placeholder="Value (e.g. 8:00 PM)" value="${esc(value)}"
+      style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:14px;font-family:inherit;width:100%">
+    <button type="button" onclick="this.closest('.builder-row').remove()" style="background:var(--red);color:#fff;border:none;border-radius:7px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700">✕</button>`;
+  el.appendChild(row);
+}
+
+function collectAnn() {
+  const rows = document.querySelectorAll('#ann-builder .builder-row');
+  return Array.from(rows).map(r => {
+    const inputs = r.querySelectorAll('input');
+    return inputs[0].value.trim() ? `${inputs[0].value.trim()}|${inputs[1].value.trim()}` : null;
+  }).filter(Boolean).join('\n');
+}
+
+// ── CONTACT BUILDER ──
+function buildContact(items) {
+  const el = document.getElementById('contact-builder');
+  el.innerHTML = '';
+  items.forEach(i => addContactRow(i.label, i.value));
+}
+
+function addContactRow(label='', value='') {
+  const el = document.getElementById('contact-builder');
+  const row = document.createElement('div');
+  row.className = 'builder-row';
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;background:var(--surface3);padding:10px 12px;border-radius:10px;border:1px solid var(--border)';
+  row.innerHTML = `
+    <input type="text" placeholder="Label (e.g. Rabbi)" value="${esc(label)}"
+      style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:14px;font-family:inherit;width:100%">
+    <input type="text" placeholder="Value (e.g. Rabbi Moshe Cohen)" value="${esc(value)}"
+      style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:14px;font-family:inherit;width:100%">
+    <button type="button" onclick="this.closest('.builder-row').remove()" style="background:var(--red);color:#fff;border:none;border-radius:7px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700">✕</button>`;
+  el.appendChild(row);
+}
+
+function collectContact() {
+  const rows = document.querySelectorAll('#contact-builder .builder-row');
+  return Array.from(rows).map(r => {
+    const inputs = r.querySelectorAll('input');
+    return inputs[0].value.trim() ? `${inputs[0].value.trim()}|${inputs[1].value.trim()}` : null;
+  }).filter(Boolean).join('\n');
+}
+
+function linesToText(arr) {
+  if (!arr || !arr.length) return '';
+  return arr.map(l => `${l.label}|${l.value}`).join('\n');
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+  // Collect dynamic builders into hidden fields
+  document.getElementById('simchas_text_hidden').value = collectSimchas();
+  document.getElementById('ann_text_hidden').value = collectAnn();
+  document.getElementById('contact_text_hidden').value = collectContact();
+
+  const f = document.getElementById('settings-form');
+  const fd = new FormData(f);
+  const body = Object.fromEntries(fd.entries());
+  const el = document.getElementById('settings-status');
+  el.innerHTML = '';
+  try {
+    const r = await apiFetch('/api/settings', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    el.innerHTML = r.ok
+      ? `<span class="badge badge-ok">✓ Saved!</span>`
+      : `<span class="badge badge-err">Error: ${r.error}</span>`;
+  } catch(err) {
+    el.innerHTML = `<span class="badge badge-err">Error: ${err.message}</span>`;
+  }
+}
+
+// ── PDF Upload ──
+const zone = document.getElementById('upload-zone');
+const fileIn = document.getElementById('file-input');
+
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type==='application/pdf') uploadFile(file);
+  else showUploadStatus(false, 'Only PDF files are allowed');
+});
+fileIn.addEventListener('change', () => {
+  if (fileIn.files[0]) uploadFile(fileIn.files[0]);
+  fileIn.value = '';
+});
+
+function showUploadStatus(ok, msg) {
+  document.getElementById('upload-status').innerHTML =
+    `<span class="badge ${ok?'badge-ok':'badge-err'}">${ok?'✓':'✗'} ${msg}</span>`;
+}
+
+async function uploadFile(file) {
+  const pw = document.getElementById('progress-wrap');
+  const pf = document.getElementById('progress-fill');
+  const pl = document.getElementById('progress-label');
+  pw.style.display = 'block';
+  pl.textContent = `Uploading ${file.name}...`;
+  pf.style.width = '10%';
+  document.getElementById('upload-status').innerHTML = '';
+
+  const fd = new FormData();
+  fd.append('pdf', file, file.name);
+
+  try {
+    // Animate progress bar
+    let prog = 10;
+    const timer = setInterval(() => { prog = Math.min(prog+5, 90); pf.style.width=prog+'%'; }, 300);
+
+    const r = await fetch('/api/docs/upload', { method:'POST', body:fd });
+    clearInterval(timer);
+    pf.style.width = '100%';
+
+    const d = await r.json();
+    setTimeout(() => { pw.style.display = 'none'; pf.style.width='0%'; }, 800);
+
+    if (d.ok) {
+      showUploadStatus(true, `"${file.name}" uploaded!`);
+      loadDocs();
+    } else {
+      showUploadStatus(false, d.error || 'Upload failed');
+    }
+  } catch(e) {
+    pw.style.display = 'none';
+    showUploadStatus(false, e.message);
+  }
+}
+
+// ── PDF Table ──
+let docsData = [];
+async function loadDocs() {
+  const wrap = document.getElementById('docs-table-wrap');
+  try {
+    docsData = await apiFetch('/api/docs');
+    if (!docsData.length) {
+      wrap.innerHTML = `<p style="color:var(--muted);padding:10px 0">No PDFs uploaded yet.</p>`;
+      return;
+    }
+    wrap.innerHTML = `
+      <table class="pdf-table">
+        <thead><tr>
+          <th>File Name</th>
+          <th style="width:80px">Order</th>
+          <th style="width:100px">Seconds</th>
+          <th style="width:70px">Active</th>
+          <th style="width:80px"></th>
+        </tr></thead>
+        <tbody id="docs-tbody"></tbody>
+      </table>`;
+    renderDocsTable();
+  } catch(e) {
+    wrap.innerHTML = `<p style="color:#ffaaaa">Error loading docs: ${e.message}</p>`;
+  }
+}
+
+function renderDocsTable() {
+  const tbody = document.getElementById('docs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = docsData.map(d => `
+    <tr>
+      <td>${esc(d.title)}</td>
+      <td><input type="number" value="${d.display_order}" min="1"
+        onchange="patchDoc(${d.id},{display_order:+this.value})"></td>
+      <td><input type="number" value="${d.duration_seconds}" min="1"
+        onchange="patchDoc(${d.id},{duration_seconds:+this.value})"></td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${d.is_active?'checked':''}
+            onchange="patchDoc(${d.id},{is_active:this.checked})">
+          <span class="slider"></span>
+        </label>
+      </td>
+      <td><button class="btn btn-danger" style="padding:5px 12px;font-size:12px"
+        onclick="deleteDoc(${d.id})">Delete</button></td>
+    </tr>`).join('');
+}
+
+async function patchDoc(id, patch) {
+  await apiFetch(`/api/docs/${id}`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(patch)
+  });
+  // reload quietly
+  docsData = await apiFetch('/api/docs');
+}
+
+async function deleteDoc(id) {
+  if (!confirm('Delete this PDF?')) return;
+  await apiFetch(`/api/docs/${id}`, { method:'DELETE' });
+  await loadDocs();
+}
+
+function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+</script>
+</body>
+</html>
