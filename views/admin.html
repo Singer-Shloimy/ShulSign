@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — Shul Board</title>
+<style>
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#222535;--surface3:#2a2e40;
+  --border:#2e3248;--text:#e8eaf0;--muted:#6b7280;--accent:#6366f1;
+  --green:#22c55e;--red:#ef4444;--gold:#d4a820;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border);
+  font-size:15px;font-weight:800;color:var(--gold)}
+.sidebar-logo small{display:block;font-size:11px;font-weight:400;color:var(--muted);margin-top:2px}
+nav{padding:12px 10px;flex:1}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;
+  border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:600;
+  border-radius:8px;cursor:pointer;text-align:left;transition:all .15s}
+.nav-btn:hover{background:var(--surface3);color:var(--text)}
+.nav-btn.active{background:var(--accent);color:#fff}
+main{padding:28px 32px;overflow-y:auto}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.page-title{font-size:22px;font-weight:800;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:20px}
+.card-title{font-size:15px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+input[type=text],input[type=number],select{width:100%;padding:10px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;outline:none;transition:border .15s}
+input:focus,select:focus{border-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.hint{font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:var(--surface3);color:var(--text);border:1px solid var(--border)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn:hover{opacity:.85}
+.builder-row{display:grid;grid-template-columns:1fr 2fr auto;gap:8px;align-items:center;
+  background:var(--surface3);padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px}
+.builder-row input{background:var(--surface2);color:var(--text);border:1px solid var(--border);
+  border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit;width:100%;outline:none}
+.pdf-table{width:100%;border-collapse:collapse}
+.pdf-table th,.pdf-table td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:13px}
+.pdf-table th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.drop-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;
+  text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2)}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:var(--surface3)}
+.dz-icon{font-size:40px;margin-bottom:10px}
+.dz-title{font-weight:700;margin-bottom:4px}
+.dz-sub{font-size:12px;color:var(--muted)}
+#toast{position:fixed;bottom:24px;right:24px;padding:14px 20px;border-radius:10px;
+  font-size:14px;font-weight:700;box-shadow:0 4px 20px rgba(0,0,0,.4);display:none;z-index:999}
+#toast.ok{background:var(--green);color:#fff}
+#toast.err{background:var(--red);color:#fff}
+.logo-preview-box{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px}
+.logo-preview-box img{max-width:180px;max-height:180px;object-fit:contain;
+  border:2px solid var(--border);border-radius:12px;padding:12px;background:var(--surface3)}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo">🕍 Shul Board Admin<small>Shloma Singer Software</small></div>
+    <nav>
+      <button class="nav-btn active" onclick="showTab('settings',this)">⚙️ Settings</button>
+      <button class="nav-btn" onclick="showTab('pdfs',this)">📄 PDFs</button>
+      <button class="nav-btn" onclick="showTab('logo',this)">🖼️ Logo</button>
+    </nav>
+  </aside>
+
+  <main>
+
+    <!-- SETTINGS -->
+    <div id="tab-settings" class="tab-panel active">
+      <div class="page-title">⚙️ Settings</div>
+      <form id="sf" onsubmit="saveSettings(event)">
+
+        <div class="card">
+          <div class="card-title">🕍 Location &amp; Info</div>
+          <div class="grid2">
+            <div class="field"><label>Shul Name</label><input type="text" name="shul_name" id="f_shul_name" dir="rtl"></div>
+            <div class="field"><label>City</label><input type="text" name="city_label" id="f_city_label"></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Latitude</label><input type="number" name="latitude" id="f_lat" step="0.0001"></div>
+            <div class="field"><label>Longitude</label><input type="number" name="longitude" id="f_lon" step="0.0001"></div>
+          </div>
+          <div class="field"><label>Timezone</label>
+            <select name="timezone" id="f_tz">
+              <option value="America/New_York">America/New_York</option>
+              <option value="America/Chicago">America/Chicago</option>
+              <option value="America/Denver">America/Denver</option>
+              <option value="America/Los_Angeles">America/Los_Angeles</option>
+              <option value="America/Toronto">America/Toronto</option>
+              <option value="America/Montreal">America/Montreal</option>
+              <option value="Asia/Jerusalem">Asia/Jerusalem</option>
+              <option value="Europe/London">Europe/London</option>
+            </select>
+          </div>
+          <div class="field"><label>Ticker Text (scrolling bar)</label>
+            <input type="text" name="ticker" id="f_ticker" dir="rtl" placeholder="Welcome..."></div>
+          <div class="hint">Find coordinates: https://www.latlong.net &nbsp;|&nbsp; Brooklyn: 40.6782, -73.9442 &nbsp;|&nbsp; Lakewood: 40.0979, -74.2179</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎉 Simchos (שמחות)</div>
+          <div class="hint" style="margin-bottom:12px">Each simcha shows as: <em>"להרב/למשפחה [Name] שליט&quot;א לרגל [Occasion]"</em></div>
+          <div id="simcha-builder"></div>
+          <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addSimchaRow()">+ Add Simcha</button>
+          <input type="hidden" name="simchas_text" id="f_simchas">
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔔 Announcements (הודעות)</div>
+          <div class="hint">Format: Label | Details</div>
+          <div id="ann-builder"></div>
+          <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addRow('ann-builder')">+ Add Announcement</button>
+          <input type="hidden" name="announcements_text" id="f_ann">
+        </div>
+
+        <div class="card">
+          <div class="card-title">📞 Contact Info</div>
+          <div id="contact-builder"></div>
+          <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addRow('contact-builder')">+ Add Contact</button>
+          <input type="hidden" name="contact_text" id="f_contact">
+        </div>
+
+        <div class="card">
+          <div class="card-title">📖 Extra Learning Items</div>
+          <div class="hint">Daf Yomi, Mishna, Omer etc. load automatically from Hebcal each day. Add custom rows here.</div>
+          <div id="learn-builder"></div>
+          <button type="button" class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="addRow('learn-builder')">+ Add Item</button>
+          <input type="hidden" name="learning_text" id="f_learning">
+        </div>
+
+        <div class="card">
+          <div class="card-title">🏢 Company Badge</div>
+          <div class="grid2">
+            <div class="field"><label>Name</label><input type="text" name="company_name" id="f_coname"></div>
+            <div class="field"><label>Tagline</label><input type="text" name="company_sub" id="f_cosub"></div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">💾 Save All Settings</button>
+      </form>
+    </div>
+
+    <!-- PDFS -->
+    <div id="tab-pdfs" class="tab-panel">
+      <div class="page-title">📄 PDFs</div>
+      <div class="card">
+        <div class="card-title">Upload New PDF</div>
+        <div class="drop-zone" id="dz" onclick="document.getElementById('pdf-file').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')" ondrop="onPdfDrop(event)">
+          <div class="dz-icon">📄</div>
+          <div class="dz-title">Click or drag PDF here</div>
+          <div class="dz-sub">Max 200MB</div>
+        </div>
+        <input type="file" id="pdf-file" accept=".pdf" style="display:none" onchange="uploadPdf(this.files[0])">
+        <div id="up-status" style="margin-top:10px;font-size:13px;display:none"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Manage PDFs</div>
+        <table class="pdf-table">
+          <thead><tr><th>Name</th><th>Seconds</th><th>Active</th><th></th></tr></thead>
+          <tbody id="pdf-tbody"><tr><td colspan="4" style="color:var(--muted);padding:20px;text-align:center">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LOGO -->
+    <div id="tab-logo" class="tab-panel">
+      <div class="page-title">🖼️ Company Logo</div>
+      <div class="card">
+        <div class="card-title">Current Logo</div>
+        <div class="logo-preview-box">
+          <img id="logo-preview" src="/api/logo" alt="No logo yet" onerror="this.style.opacity='.3'">
+          <span style="font-size:12px;color:var(--muted)">Shown bottom-right on display screen</span>
+        </div>
+        <div class="drop-zone" id="logo-dz" onclick="document.getElementById('logo-file').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')" ondrop="onLogoDrop(event)">
+          <div class="dz-icon">🖼️</div>
+          <div class="dz-title">Click or drag new logo here</div>
+          <div class="dz-sub">PNG with transparent background recommended · Max 10MB</div>
+        </div>
+        <input type="file" id="logo-file" accept="image/*" style="display:none" onchange="uploadLogo(this.files[0])">
+        <div id="logo-status" style="margin-top:10px;font-size:13px;display:none"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+/* TAB */
+function showTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'pdfs') loadPdfs();
+  if (id === 'logo') document.getElementById('logo-preview').src = '/api/logo?t=' + Date.now();
+}
+
+/* TOAST */
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = type || 'ok'; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+/* ROWS */
+function addRow(bid, label, value) {
+  const el = document.getElementById(bid);
+  const div = document.createElement('div');
+  div.className = 'builder-row';
+  div.innerHTML = `
+    <input type="text" placeholder="Label" dir="rtl" value="${escAttr(label||'')}">
+    <input type="text" placeholder="Value" dir="rtl" value="${escAttr(value||'')}">
+    <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.builder-row').remove()">✕</button>`;
+  el.appendChild(div);
+}
+function collectRows(bid) {
+  return Array.from(document.querySelectorAll('#' + bid + ' .builder-row')).map(r => {
+    const ins = r.querySelectorAll('input');
+    return ins[0].value.trim() ? ins[0].value.trim() + '|' + ins[1].value.trim() : null;
+  }).filter(Boolean).join('\n');
+}
+function fillRows(bid, items) {
+  document.getElementById(bid).innerHTML = '';
+  (items || []).forEach(i => addRow(bid, i.label, i.value));
+}
+function escAttr(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+/* SIMCHA ROWS */
+const SIMCHA_TYPES = [
+  {value:"בר מצוה",        label:"Bar Mitzvah (בר מצוה)"},
+  {value:"בת מצוה",        label:"Bat Mitzvah (בת מצוה)"},
+  {value:"חתונה",          label:"Wedding (חתונה)"},
+  {value:"שבע ברכות",     label:"Sheva Brachos (שבע ברכות)"},
+  {value:"ברית מילה",      label:"Bris (ברית מילה)"},
+  {value:"פדיון הבן",      label:"Pidyon HaBen (פדיון הבן)"},
+  {value:"אירוסין",        label:"Engagement (אירוסין)"},
+  {value:"הולדת הבן",      label:"Birth of a Son (הולדת הבן)"},
+  {value:"הולדת הבת",      label:"Birth of a Daughter (הולדת הבת)"},
+  {value:"יום הולדת",      label:"Birthday (יום הולדת)"},
+  {value:"שנה טובה",       label:"Shanah Tovah (שנה טובה)"},
+  {value:"יארצייט",        label:"Yahrtzeit (יארצייט)"},
+  {value:"חנוכת הבית",     label:"Housewarming (חנוכת הבית)"},
+  {value:"נישואין",        label:"Anniversary (נישואין)"},
+];
+
+const SIMCHA_PREFIX = [
+  {value:"להרב",     label:"להרב (HaRav)"},
+
+  {value:"למשפחת",   label:"למשפחת (Family)"},
+  {value:"לכבוד",    label:"לכבוד (In honor of)"},
+  {value:"לרגל",     label:"לרגל (On occasion of)"},
+  {value:"",         label:"(No prefix)"},
+];
+
+function addSimchaRow(prefix, name, type, suffix) {
+  prefix = prefix || 'להרב';
+  name   = name   || '';
+  type   = type   || 'בר מצוה';
+  suffix = suffix || 'שליט״א';
+  const el = document.getElementById('simcha-builder');
+  const div = document.createElement('div');
+  div.className = 'builder-row';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;align-items:center;background:var(--surface3);padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px';
+
+  const prefixOpts = SIMCHA_PREFIX.map(p => `<option value="${p.value}" ${p.value===prefix?'selected':''}>${p.label}</option>`).join('');
+  const typeOpts   = SIMCHA_TYPES.map(t  => `<option value="${t.value}" ${t.value===type?'selected':''}>${t.label}</option>`).join('');
+
+  div.innerHTML = `
+    <select style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 6px;font-size:12px;width:100%">${prefixOpts}</select>
+    <input type="text" placeholder="Name (e.g. שלמה גרין)" value="${escAttr(name)}" dir="rtl"
+      style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-size:13px;width:100%">
+    <input type="text" placeholder='שליט"א / נ"י' value="${escAttr(suffix)}" dir="rtl"
+      style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 6px;font-size:12px;width:100%">
+    <select style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:8px 6px;font-size:12px;width:100%">${typeOpts}</select>
+    <button type="button" class="btn btn-danger btn-sm" onclick="this.closest('.builder-row').remove()">✕</button>`;
+  el.appendChild(div);
+}
+
+function fillSimchas(items) {
+  document.getElementById('simcha-builder').innerHTML = '';
+  (items||[]).forEach(item => {
+    // item.label = "להרב שלמה גרין שליט"א"  item.value = "בר מצוה"
+    // Parse: prefix + name + suffix | type
+    const parts = item.label.split(' ');
+    let prefix = '', name = item.label, suffix = '';
+    // Try to detect prefix
+    const knownPrefixes = SIMCHA_PREFIX.map(p=>p.value).filter(Boolean);
+    if (parts.length > 1 && knownPrefixes.includes(parts[0])) {
+      prefix = parts[0];
+      const rest = parts.slice(1);
+      // Detect suffix (last word if it looks like a title)
+      const knownSuffixes = ['שליט"א','נ"י','זצ"ל','ז"ל'];
+      if (rest.length > 1 && knownSuffixes.includes(rest[rest.length-1])) {
+        suffix = rest[rest.length-1];
+        name = rest.slice(0,-1).join(' ');
+      } else {
+        name = rest.join(' ');
+      }
+    }
+    addSimchaRow(prefix, name, item.value||'בר מצוה', suffix);
+  });
+}
+
+function collectSimchas() {
+  const rows = document.querySelectorAll('#simcha-builder .builder-row');
+  return Array.from(rows).map(r => {
+    const [prefixSel, nameIn, suffixIn, typeSel] = [r.querySelectorAll('select')[0], r.querySelectorAll('input')[0], r.querySelectorAll('input')[1], r.querySelectorAll('select')[1]];
+    const prefix = prefixSel.value.trim();
+    const name   = nameIn.value.trim();
+    const suffix = suffixIn.value.trim();
+    const type   = typeSel.value.trim();
+    if (!name) return null;
+    // label = formatted display string, value = occasion type
+    const label = [prefix, name, suffix].filter(Boolean).join(' ');
+    return label + '|' + type;
+  }).filter(Boolean).join('\n');
+}
+
+/* SETTINGS */
+async function loadSettings() {
+  try {
+    const s = await fetch('/api/settings').then(r => r.json());
+    document.getElementById('f_shul_name').value = s.shul_name || '';
+    document.getElementById('f_city_label').value = s.city_label || '';
+    document.getElementById('f_lat').value = s.latitude || '';
+    document.getElementById('f_lon').value = s.longitude || '';
+    document.getElementById('f_tz').value = s.timezone || 'America/New_York';
+    document.getElementById('f_ticker').value = s.ticker || '';
+    document.getElementById('f_coname').value = s.company_name || '';
+    document.getElementById('f_cosub').value = s.company_sub || '';
+    fillSimchas(s.simchas_json || []);
+    fillRows('ann-builder', s.announcements_json || []);
+    fillRows('contact-builder', s.contact_json || []);
+    fillRows('learn-builder', s.learning_json || []);
+  } catch(e) { toast('Failed to load settings', 'err'); }
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+  document.getElementById('f_simchas').value = collectSimchas();
+  document.getElementById('f_ann').value = collectRows('ann-builder');
+  document.getElementById('f_contact').value = collectRows('contact-builder');
+  document.getElementById('f_learning').value = collectRows('learn-builder');
+  const data = Object.fromEntries(new FormData(document.getElementById('sf')).entries());
+  try {
+    const r = await fetch('/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+    const d = await r.json();
+    d.ok ? toast('✓ Saved!') : toast('Error: ' + d.error, 'err');
+  } catch(e) { toast('Save failed', 'err'); }
+}
+
+/* PDFS */
+async function loadPdfs() {
+  try {
+    const docs = await fetch('/api/docs').then(r => r.json());
+    const tb = document.getElementById('pdf-tbody');
+    if (!docs.length) { tb.innerHTML = '<tr><td colspan="4" style="color:var(--muted);padding:20px;text-align:center">No PDFs yet</td></tr>'; return; }
+    tb.innerHTML = docs.map(d => `<tr>
+      <td>${escAttr(d.title)}</td>
+      <td><input type="number" value="${d.duration_seconds}" min="1" style="width:70px;padding:4px 8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:13px"
+        onchange="patchDoc(${d.id},{duration_seconds:+this.value})"></td>
+      <td><input type="checkbox" ${d.is_active?'checked':''} onchange="patchDoc(${d.id},{is_active:this.checked})"></td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteDoc(${d.id})">Delete</button></td>
+    </tr>`).join('');
+  } catch(e) { toast('Failed to load PDFs','err'); }
+}
+
+async function uploadPdf(file) {
+  if (!file) return;
+  const st = document.getElementById('up-status');
+  st.style.display = 'block'; st.style.color = 'var(--muted)'; st.textContent = 'Uploading...';
+  const fd = new FormData(); fd.append('pdf', file);
+  try {
+    const d = await fetch('/api/docs/upload', {method:'POST',body:fd}).then(r=>r.json());
+    if (d.ok) { st.style.color='var(--green)'; st.textContent='✓ Uploaded!'; loadPdfs(); }
+    else { st.style.color='var(--red)'; st.textContent='Error: '+d.error; }
+  } catch(e) { st.style.color='var(--red)'; st.textContent='Upload failed'; }
+}
+function onPdfDrop(e) { e.preventDefault(); document.getElementById('dz').classList.remove('drag'); const f=e.dataTransfer.files[0]; if(f) uploadPdf(f); }
+async function patchDoc(id, patch) { await fetch('/api/docs/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)}); }
+async function deleteDoc(id) { if(!confirm('Delete?')) return; await fetch('/api/docs/'+id,{method:'DELETE'}); loadPdfs(); }
+
+/* LOGO */
+async function uploadLogo(file) {
+  if (!file) return;
+  const st = document.getElementById('logo-status');
+  st.style.display = 'block'; st.style.color = 'var(--muted)'; st.textContent = 'Uploading...';
+  const fd = new FormData(); fd.append('logo', file);
+  try {
+    const d = await fetch('/api/logo',{method:'POST',body:fd}).then(r=>r.json());
+    if (d.ok) { st.style.color='var(--green)'; st.textContent='✓ Logo updated! Display refreshes automatically.'; document.getElementById('logo-preview').src='/api/logo?t='+Date.now(); }
+    else { st.style.color='var(--red)'; st.textContent='Error: '+d.error; }
+  } catch(e) { st.style.color='var(--red)'; st.textContent='Upload failed'; }
+}
+function onLogoDrop(e) { e.preventDefault(); document.getElementById('logo-dz').classList.remove('drag'); const f=e.dataTransfer.files[0]; if(f) uploadLogo(f); }
+
+loadSettings();
+</script>
+</body>
+</html>

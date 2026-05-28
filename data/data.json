@@ -1,0 +1,61 @@
+{
+  "settings": {
+    "shul_name": "בית הכנסת",
+    "city_label": "New York",
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "timezone": "America/New_York",
+    "ticker": "",
+    "simchas_title": "שמחות",
+    "simchas_json": [
+      {
+        "label": "להרב Shloma Singer שליט״א",
+        "value": "בר מצוה"
+      },
+      {
+        "label": "להרב Shloma Singer שליט״א",
+        "value": "חתונה"
+      },
+      {
+        "label": "להרב Shloma Singer שליט״א",
+        "value": "הולדת הבן"
+      }
+    ],
+    "announcements_title": "הודעות",
+    "announcements_json": [],
+    "contact_json": [],
+    "learning_json": [],
+    "company_name": "Shloma Singer",
+    "company_sub": "Software Engineering"
+  },
+  "docs": [
+    {
+      "id": 1,
+      "title": "flyer1_melave_malka.pdf",
+      "file_path": "/pdfs/1779659525583-27z3s472rgo.pdf",
+      "display_order": 1,
+      "duration_seconds": 20,
+      "is_active": true,
+      "uploaded_at": "2026-05-24T21:52:05.587Z"
+    },
+    {
+      "id": 3,
+      "title": "flyer3_shabbos_shiur.pdf",
+      "file_path": "/pdfs/1779674227723-1n69guju09nh.pdf",
+      "display_order": 2,
+      "duration_seconds": 20,
+      "is_active": true,
+      "uploaded_at": "2026-05-25T01:57:07.725Z"
+    },
+    {
+      "id": 4,
+      "title": "flyer2_purim_party.pdf",
+      "file_path": "/pdfs/1779926816335-293jwvupgc9.pdf",
+      "display_order": 3,
+      "duration_seconds": 20,
+      "is_active": true,
+      "uploaded_at": "2026-05-28T00:06:56.338Z"
+    }
+  ],
+  "nextId": 5
+}
