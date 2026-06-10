@@ -269,6 +269,23 @@ const SIMCHA_PREFIX = [
   {value:"",         label:"(No prefix)"},
 ];
 
+function normHonorific(s){
+  return (s||'').replace(/[""״]/g,'"').trim();
+}
+
+function isKnownSuffix(word){
+  const w=normHonorific(word);
+  return ['שליט"א','נ"י','זצ"ל','ז"ל'].includes(w);
+}
+
+function stripSuffixFromName(name, suffix){
+  const n=(name||'').trim();
+  const s=normHonorific(suffix);
+  if(!n||!s) return n;
+  const re=new RegExp('\\s*'+s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\s*$');
+  return n.replace(re,'').trim();
+}
+
 function addSimchaRow(prefix, name, type, suffix) {
   prefix = prefix || 'להרב';
   name   = name   || '';
@@ -305,9 +322,7 @@ function fillSimchas(items) {
     if (parts.length > 1 && knownPrefixes.includes(parts[0])) {
       prefix = parts[0];
       const rest = parts.slice(1);
-      // Detect suffix (last word if it looks like a title)
-      const knownSuffixes = ['שליט"א','נ"י','זצ"ל','ז"ל'];
-      if (rest.length > 1 && knownSuffixes.includes(rest[rest.length-1])) {
+      if (rest.length > 1 && isKnownSuffix(rest[rest.length-1])) {
         suffix = rest[rest.length-1];
         name = rest.slice(0,-1).join(' ');
       } else {
@@ -323,11 +338,11 @@ function collectSimchas() {
   return Array.from(rows).map(r => {
     const [prefixSel, nameIn, suffixIn, typeSel] = [r.querySelectorAll('select')[0], r.querySelectorAll('input')[0], r.querySelectorAll('input')[1], r.querySelectorAll('select')[1]];
     const prefix = prefixSel.value.trim();
-    const name   = nameIn.value.trim();
-    const suffix = suffixIn.value.trim();
+    let name   = nameIn.value.trim();
+    const suffix = suffixIn.value.trim() || 'שליט״א';
     const type   = typeSel.value.trim();
     if (!name) return null;
-    // label = formatted display string, value = occasion type
+    name = stripSuffixFromName(name, suffix);
     const label = [prefix, name, suffix].filter(Boolean).join(' ');
     return label + '|' + type;
   }).filter(Boolean).join('\n');

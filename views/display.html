@@ -454,7 +454,7 @@ function rebuildTicker(){
   const parts = [];
   if(TK.custom) parts.push(TK.custom);
   parts.push(TK.weekday + (TK.hdate ? "  |  " + TK.hdate : ""));
-  if(TK.parsha) parts.push("פרשת השבוע: " + TK.parsha);
+  if(TK.parsha) parts.push("פרשת השבוע: " + cleanParshaName(TK.parsha));
   if(TK.events) parts.push(TK.events);
   if(TK.candles) parts.push(TK.candles);
   const txt = parts.filter(Boolean).join(sep);
@@ -615,7 +615,7 @@ function showSimcha(i){
   el.innerHTML='<div class="simcha-stage"><div class="simcha-card">'
     +'<div class="s-mazel">❆ מזל טוב ❆</div>'
     +'<div class="s-line"></div>'
-    +'<div class="s-name">'+esc(it.label)+'</div>'
+    +'<div class="s-name">'+esc(cleanSimchaLabel(it.label))+'</div>'
     +(occasion?'<div class="s-sub">'+occasion+'</div>':'')
     +'</div></div>'+dots;
 }
@@ -693,6 +693,22 @@ function renderLearning(items){
 
 function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
 
+function cleanParshaName(raw){
+  return (raw||"")
+    .replace(/^פרשת\s+/u,"")
+    .replace(/^פרשה\s+/u,"")
+    .replace(/^Parshat\s+/i,"")
+    .replace(/^Parasha\s+/i,"")
+    .replace(/^Parashat\s+/i,"")
+    .trim();
+}
+
+function cleanSimchaLabel(raw){
+  let s=(raw||"").trim();
+  s=s.replace(/(\s*שליט[""״]א\s*){2,}$/u," שליט״א");
+  return s.trim();
+}
+
 function fmt12(iso,tz){
   try{return new Date(iso).toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit",hour12:true,timeZone:tz});}
   catch{return "–";}
@@ -728,7 +744,7 @@ async function loadHebcal(){
     );
     const ppToday = today.find(x=>x.category==="parashat");
     const pp = ppToday || ppUpcoming;
-    TK.parsha = pp ? (pp.hebrew || pp.title || "") : "";
+    TK.parsha = pp ? cleanParshaName(pp.hebrew || pp.title || "") : "";
      
     // Candle lighting
     const cc=today.find(x=>x.category==="candles");
@@ -858,10 +874,10 @@ function getKosherZmanimLimudim(){
   // ── Parsha ──
   try{
     if(hdf && typeof hdf.formatParsha === 'function'){
-      const parsha = hdf.formatParsha(jc);
-      if(parsha && parsha.trim()) items.push({label:'\u05E4\u05E8\u05E9\u05EA \u05D4\u05E9\u05D1\u05D5\u05E2', value:parsha.trim()});
+      const parsha = cleanParshaName(hdf.formatParsha(jc));
+      if(parsha) items.push({label:'\u05E4\u05E8\u05E9\u05EA \u05D4\u05E9\u05D1\u05D5\u05E2', value:parsha});
     } else if(TK.parsha){
-  items.push({label:'פרשת השבוע', value:TK.parsha});
+  items.push({label:'פרשת השבוע', value:cleanParshaName(TK.parsha)});
 }
   }catch(e){}
 
@@ -903,7 +919,7 @@ async function loadLimudimHebcal(){
       const val=(item.hebrew||item.title||'').trim();
       if(val){ seen.add(lbl); items.push({label:lbl,value:val}); }
     }
-    if(TK.parsha) items.push({label:'\u05E4\u05E8\u05E9\u05EA \u05D4\u05E9\u05D1\u05D5\u05E2', value:TK.parsha});
+    if(TK.parsha) items.push({label:'\u05E4\u05E8\u05E9\u05EA \u05D4\u05E9\u05D1\u05D5\u05E2', value:cleanParshaName(TK.parsha)});
     const dailyItems = await fetch("/api/limudim/today").then(r=>r.ok?r.json():[]).catch(()=>[]);
     const adminItems=CFG.learning_json||[];
     renderLearning([...items, ...(dailyItems||[]), ...adminItems]);
