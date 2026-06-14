@@ -763,13 +763,13 @@ async function loadHebcal(){
       let px="";
       if(item.category==="holiday"){
         // yomtov=true means major holiday (Rosh Hashana, Yom Kippur, Pesach etc.)
-        if(item.yomtov)       px="🌟 ";
-        else if(item.subcat==="fast") px="✊ ";
+        if(item.yomtov)       px=" ";
+        else if(item.subcat==="fast") px=" ";
         else                  px="✨ ";
       } else if(item.category==="roshchodesh"){
-        px="🌙 ";
+        px=" ";
       } else if(item.category==="mevarchim"){
-        px="📅 ";
+        px=" ";
       } else if(item.category==="omer"){
         px="✨ ";
       }
